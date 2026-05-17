@@ -1,0 +1,12 @@
+feeds:
+  - url: "https://news.google.com/rss/search?q=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3+%E7%B5%8C%E5%96%B6&hl=ja&gl=JP&ceid=JP:ja"
+    categories: [revenue, store]
+    label: "ラーメン経営"
+
+  - url: "https://news.google.com/rss/search?q=%E9%A3%B2%E9%A3%9F%E5%BA%97+%E9%A3%9F%E6%9D%90+%E5%80%A4%E4%B8%8A%E3%81%8C%E3%82%8A&hl=ja&gl=JP&ceid=JP:ja"
+    categories: [cost]
+    label: "食材コスト"
+
+  - url: "https://news.google.com/rss/search?q=%E5%A4%96%E9%A3%9F+%E5%A3%B2%E4%B8%8A+%E5%AE%A2%E6%95%B0&hl=ja&gl=JP&ceid=JP:ja"
+    categories: [revenue]
+    label: "外食売上動向"
