@@ -14,12 +14,18 @@ def strip_html(text):
     return re.sub(r"<[^>]+>", "", text or "").replace("&nbsp;", " ").strip()
 
 
+def is_excluded(title, exclude_keywords):
+    return any(kw in title for kw in exclude_keywords)
+
+
 def fetch():
     with open(CONFIG, encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
+    exclude_keywords = config.get("exclude_keywords", [])
     articles = []
     seen_titles = set()
+    excluded_count = 0
 
     for feed_conf in config.get("feeds", []):
         url = feed_conf["url"]
@@ -41,6 +47,9 @@ def fetch():
 
             title = strip_html(entry.get("title", "")).strip()
             if not title or title in seen_titles:
+                continue
+            if is_excluded(title, exclude_keywords):
+                excluded_count += 1
                 continue
             seen_titles.add(title)
 
@@ -65,7 +74,7 @@ def fetch():
             f, ensure_ascii=False, indent=2
         )
 
-    print(f"\n  収集完了: 合計{len(articles)}件 → {OUTPUT.name}")
+    print(f"\n  収集完了: {len(articles)}件（{excluded_count}件をキーワードフィルタで除外）→ {OUTPUT.name}")
 
 
 if __name__ == "__main__":
