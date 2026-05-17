@@ -1,12 +1,45 @@
 feeds:
-  - url: "https://news.google.com/rss/search?q=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3+%E7%B5%8C%E5%96%B6&hl=ja&gl=JP&ceid=JP:ja"
-    categories: [revenue, store]
-    label: "ラーメン経営"
+  # ── トップニュース（世界・日本の大きな動き）──
+  - url: "https://www.nhk.or.jp/rss/news/cat0.xml"
+    label: "NHKトップ"
+    categories: [general]
+    limit: 15
 
-  - url: "https://news.google.com/rss/search?q=%E9%A3%B2%E9%A3%9F%E5%BA%97+%E9%A3%9F%E6%9D%90+%E5%80%A4%E4%B8%8A%E3%81%8C%E3%82%8A&hl=ja&gl=JP&ceid=JP:ja"
+  - url: "https://www.nhk.or.jp/rss/news/cat3.xml"
+    label: "NHK経済"
+    categories: [economy]
+    limit: 12
+
+  - url: "https://www.nhk.or.jp/rss/news/cat1.xml"
+    label: "NHK社会"
+    categories: [general]
+    limit: 10
+
+  # ── 物価・食料品コスト ──
+  - url: "https://news.google.com/rss/search?q=%E9%A3%9F%E6%96%99%E5%93%81+%E5%80%A4%E4%B8%8A%E3%81%8C%E3%82%8A+%E4%BB%95%E5%85%A5%E3%82%8C&hl=ja&gl=JP&ceid=JP:ja"
+    label: "食材値上がり"
     categories: [cost]
-    label: "食材コスト"
+    limit: 10
 
-  - url: "https://news.google.com/rss/search?q=%E5%A4%96%E9%A3%9F+%E5%A3%B2%E4%B8%8A+%E5%AE%A2%E6%95%B0&hl=ja&gl=JP&ceid=JP:ja"
-    categories: [revenue]
-    label: "外食売上動向"
+  - url: "https://news.google.com/rss/search?q=%E7%82%BA%E6%9B%BF+%E8%BC%B8%E5%85%A5%E7%89%A9%E4%BE%A1+%E5%86%86%E5%AE%89&hl=ja&gl=JP&ceid=JP:ja"
+    label: "為替・輸入コスト"
+    categories: [cost, economy]
+    limit: 8
+
+  # ── 労働・人件費 ──
+  - url: "https://news.google.com/rss/search?q=%E6%9C%80%E4%BD%8E%E8%B3%83%E9%87%91+%E4%BA%BA%E6%89%8B%E4%B8%8D%E8%B6%B3+%E9%A3%B2%E9%A3%9F&hl=ja&gl=JP&ceid=JP:ja"
+    label: "人件費・労働"
+    categories: [labor]
+    limit: 8
+
+  # ── 消費・外食動向 ──
+  - url: "https://news.google.com/rss/search?q=%E5%A4%96%E9%A3%9F+%E6%B6%88%E8%B2%BB+%E5%AE%A2%E6%95%B0&hl=ja&gl=JP&ceid=JP:ja"
+    label: "外食・消費動向"
+    categories: [consumer]
+    limit: 10
+
+  # ── ラーメン・飲食業界固有 ──
+  - url: "https://news.google.com/rss/search?q=%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3+%E9%A3%B2%E9%A3%9F%E5%BA%97+%E5%80%92%E7%94%A3+%E5%80%A4%E4%B8%8A%E3%81%92&hl=ja&gl=JP&ceid=JP:ja"
+    label: "ラーメン・飲食"
+    categories: [restaurant]
+    limit: 10
