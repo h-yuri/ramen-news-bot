@@ -83,9 +83,16 @@ def build():
           <span class="cost-detail">{c.get("detail","")}</span>
         </div>"""
 
-    # --- Articles ---
+    # --- Articles (filter to relevant only) ---
+    relevant_indices = set(analysis.get("relevant_indices", []))
+    # 1-indexed: index i in articles corresponds to article number i+1
+    if relevant_indices:
+        display_articles = [a for i, a in enumerate(articles) if (i + 1) in relevant_indices]
+    else:
+        display_articles = articles  # fallback: show all
+
     articles_html = ""
-    for i, a in enumerate(articles):
+    for i, a in enumerate(display_articles):
         summary = strip_html(a.get("summary", ""))[:180]
         if summary:
             summary += "…"
@@ -357,7 +364,7 @@ def build():
 
   <!-- Articles -->
   <div class="card" style="animation-delay:.45s">
-    <div class="card-title">収集記事 ({len(articles)}件) — タップで全文</div>
+    <div class="card-title">関連記事 ({len(display_articles)}件 / 収集{len(articles)}件中) — タップで全文</div>
     <div class="articles-list">
       {articles_html if articles_html else '<p style="color:var(--muted);font-size:.85rem">記事なし</p>'}
     </div>

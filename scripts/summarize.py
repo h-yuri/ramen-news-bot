@@ -80,8 +80,13 @@ def summarize():
   ],
   "cost_items": [
     {{"name": "食材・コスト項目名", "direction": "上昇/横ばい/下降", "detail": "根拠となる数字や記事内容"}}
-  ]
-}}"""
+  ],
+  "relevant_indices": [1, 2, 3]
+}}
+
+relevant_indices には、ラーメン店経営者が実際に読む価値のある記事の番号（[N] の N）を入れてください。
+犯罪・事件・事故・スポーツ・芸能・自然災害（直接経営に影響しないもの）は除外すること。
+経済・物価・労働・外食・食材・為替・競合・消費動向・規制・税制に関する記事は含めること。"""
 
     print(f"  Gemini API 呼び出し中（{len(used)}件の記事を分析）...")
     response = client.models.generate_content(
