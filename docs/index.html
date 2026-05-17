@@ -3,152 +3,587 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ラーメン経営情報ボード — 2026-05-17</title>
+  <title>ラーメン経営情報ボード</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; background: #f5f5f5; color: #333; }
-    header { background: #c0392b; color: #fff; padding: 16px 24px; }
-    header h1 { font-size: 1.4rem; }
-    header small { font-size: 0.8rem; opacity: 0.8; }
-    .container { max-width: 860px; margin: 0 auto; padding: 16px; }
-    .alert-box { background: #fadbd8; border-left: 6px solid #c0392b; padding: 16px; margin: 16px 0; border-radius: 4px; }
-    .alert-box .level { font-size: 1.1rem; font-weight: bold; color: #c0392b; margin-bottom: 8px; }
-    .summary { font-size: 0.95rem; line-height: 1.6; }
-    .section { background: #fff; border-radius: 6px; padding: 16px; margin: 12px 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-    .section h2 { font-size: 1rem; color: #555; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
-    .tag { display: inline-block; background: #eaf0fb; color: #2471a3; border-radius: 12px; padding: 3px 10px; font-size: 0.82rem; margin: 3px; }
-    .section ul { padding-left: 18px; }
-    .section li { margin: 6px 0; font-size: 0.9rem; line-height: 1.5; }
-    .article { padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-    .article:last-child { border-bottom: none; }
-    .article a { color: #2471a3; text-decoration: none; font-size: 0.9rem; display: block; }
-    .article a:hover { text-decoration: underline; }
-    .meta { font-size: 0.75rem; color: #999; display: block; margin-top: 2px; }
-    .cost-badge { display: inline-block; background: #f0f0f0; border-radius: 4px; padding: 4px 10px; font-size: 0.85rem; }
-    footer { text-align: center; color: #aaa; font-size: 0.75rem; padding: 24px; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --alert-color: #ff4757;
+      --alert-glow: rgba(255,71,87,0.4);
+      --alert-bg: #2d1b1b;
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+    }
+
+    body {
+      font-family: 'Inter', 'Hiragino Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 20% 20%, rgba(255,71,87,0.4) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.08) 0%, transparent 50%);
+      animation: bgPulse 8s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes bgPulse {
+      0%   { transform: scale(1) rotate(0deg); opacity: 0.6; }
+      100% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0 32px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .header-left h1 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 0%, var(--alert-color) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-left p {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(46,213,115,0.1);
+      border: 1px solid rgba(46,213,115,0.3);
+      color: #2ed573;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: #2ed573;
+      border-radius: 50%;
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* Alert Hero */
+    .alert-hero {
+      background: var(--alert-bg);
+      border: 1px solid var(--alert-color);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease 0.1s both;
+      box-shadow: 0 0 40px var(--alert-glow), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .alert-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, var(--alert-glow) 0%, transparent 70%);
+      transform: translate(30%, -30%);
+      pointer-events: none;
+    }
+
+    .alert-level-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .alert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--alert-color);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 900;
+      padding: 5px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.1em;
+      animation: badgePop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+      box-shadow: 0 0 20px var(--alert-glow);
+    }
+
+    @keyframes badgePop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .alert-label {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .alert-summary {
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      line-height: 1.75;
+      color: var(--text);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      animation: fadeUp 0.5s ease both;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .stat-value.accent {
+      color: var(--alert-color);
+    }
+
+    .stat-value.trend {
+      color: #ff4757;
+    }
+
+    /* Grid layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .card-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Topics */
+    .topics-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .topic-tag {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      animation: fadeUp 0.4s ease both;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .topic-tag:hover {
+      border-color: var(--alert-color);
+      background: var(--alert-bg);
+    }
+
+    /* Actions */
+    .action-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      animation: fadeLeft 0.4s ease both;
+    }
+
+    .action-num {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      background: var(--alert-color);
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 900;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Articles */
+    .articles-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .article-card {
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: var(--text);
+      animation: fadeUp 0.3s ease both;
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+
+    .article-card:hover {
+      border-color: var(--alert-color);
+      background: var(--surface2);
+      transform: translateX(4px);
+    }
+
+    .article-label {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--alert-color);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .article-title {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
+    .article-date {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Counter animation */
+    .count-anim {
+      display: inline-block;
+      animation: countUp 1s cubic-bezier(0.16,1,0.3,1) 0.5s both;
+    }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+      to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.72rem;
+      padding-top: 40px;
+      animation: fadeUp 0.5s ease 0.8s both;
+    }
   </style>
 </head>
 <body>
+<div class="container">
+
   <header>
-    <h1>ラーメン経営情報ボード</h1>
-    <small>2026-05-17 更新 | 収集記事数: 30件</small>
+    <div class="header-left">
+      <h1>ラーメン経営情報ボード</h1>
+      <p>2026-05-17 更新</p>
+    </div>
+    <div class="header-right">
+      <span class="live-badge"><span class="live-dot"></span>AUTO UPDATE</span>
+    </div>
   </header>
-  <div class="container">
-    <div class="alert-box">
-      <div class="level">アラートレベル: ⚠ 高</div>
-      <div class="summary">原材料費・人件費・物流費の急騰で飲食店の経営を圧迫し、倒産が増加。値上げにより売上は増えるものの客離れが顕著で、特に価格敏感層は消費を控える傾向。コンビニなど競合も質を向上させており、ラーメン業界の競争は激化。経営効率化と差別化が急務。</div>
-    </div>
 
-    <div class="section">
-      <h2>主要トピック</h2>
-      <span class="tag">深刻な原材料費・人件費・物流費の高騰</span><span class="tag">値上げによる外食売上増と客数伸び悩みの二極化</span><span class="tag">ラーメン業界の競争激化と倒産件数の増加</span><span class="tag">経営効率化と差別化戦略の重要性</span>
+  <!-- Alert Hero -->
+  <div class="alert-hero">
+    <div class="alert-level-row">
+      <span class="alert-badge">🔴 HIGH</span>
+      <span class="alert-label">アラートレベル</span>
     </div>
+    <p class="alert-summary">原材料費・人件費・物流費の急騰で飲食店の経営を圧迫し、倒産が増加。値上げにより売上は増えるものの客離れが顕著で、特に価格敏感層は消費を控える傾向。コンビニなど競合も質を向上させており、ラーメン業界の競争は激化。経営効率化と差別化が急務。</p>
+  </div>
 
-    <div class="section">
-      <h2>食材コスト動向</h2>
-      <span class="cost-badge">上昇</span>
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card" style="animation-delay:0.2s">
+      <div class="stat-label">収集記事数</div>
+      <div class="stat-value accent count-anim">30<span style="font-size:1rem;font-weight:400"> 件</span></div>
     </div>
-
-    <div class="section">
-      <h2>推奨アクション</h2>
-      <ul><li>仕入れ先の見直し、食品ロス削減、オペレーション改善など徹底したコスト管理と効率化を推進する。</li><li>原価率に基づいた戦略的な価格改定と、高付加価値メニューや限定メニューで顧客単価向上と集客を図る。</li><li>独自の味、サービス、コンセプトを強化し、SNSやデジタルツールを活用して顧客体験価値とブランド認知度を高める。</li><li>業界セミナー参加やM&A含め、最新の経営ノウハウを学び、変化する市場環境に適応できる経営戦略を構築する。</li></ul>
+    <div class="stat-card" style="animation-delay:0.25s">
+      <div class="stat-label">食材コスト動向</div>
+      <div class="stat-value trend count-anim">↑ 上昇</div>
     </div>
-
-    <div class="section">
-      <h2>収集記事一覧 (30件)</h2>
-      <div class="article">
-          <a href="https://news.google.com/rss/articles/CBMif0FVX3lxTE1BbUpIQkpBdmxhaFNhbzN4MzFTSGd3bUpvTUlqcVUtZ0k5V0x3dHFvYV9mdVNvX1dSbUJRcGd4WHFoYlJSMHhQUUNhbzhvRUtPZ3RMblZUNUw1NS1ocEtLQ3VxY0ZQLWVtcEVQN090ajVwUVk5RUlwTTVVZ2hFSW8?oc=5" target="_blank" rel="noopener">ハチバン、創業家が取締役退任 経営から外れるのは初（北國新聞社） - Yahoo!ニュース</a>
-          <span class="meta">ラーメン経営 | Wed, 13 May 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTE5NN2hrNy04M29uel9fV2RfWllXS3lvRWptRU4zcWktZ3dmX3Y3SzN0NWhBMHJ6Q1E4UWRYUms5d1B4cHlsZktwOFpnR1pUbWV6dTZTTDdMUElQTXA0cU12VmlIMWdwb2x0S3c?oc=5" target="_blank" rel="noopener">「2026年版 ラーメン経営の最前線」セミナー開催のお知らせ - PR TIMES</a>
-          <span class="meta">ラーメン経営 | Mon, 27 Apr 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiYEFVX3lxTFB1bUk0MW0yNWpCMUdvZlFLT19XV0JtYlVQTE81SmxDX193ZVBTUUVUcEx2SjVhOEIzRUJNRTBFWjE2RmdCV01PLVA5ZG5qc1ZUSmFmd3NybkZpT19feldlVg?oc=5" target="_blank" rel="noopener">ラーメン経営の最前線（2026年6月開催） | M&Aならストライク【東証プライム上場グループ】 - ストライク</a>
-          <span class="meta">ラーメン経営 | Tue, 14 Apr 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiVkFVX3lxTFA1cXNLOEkxUnVxWmdVdE5NV2Izal8tVjVkbk90NXVRU2tpZXVtTFhyVWE5QlRBakpWR28xaTczaG5yTlk4VDVNQ2huN3BoVGxic2h0MGJn?oc=5" target="_blank" rel="noopener">「2026年版 ラーメン経営の最前線」セミナー開催のお知らせ - フーズチャネル</a>
-          <span class="meta">ラーメン経営 | Mon, 27 Apr 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiVkFVX3lxTE1PU2V1cUE5QzNRd3N4SjE5SUstYmt6dEVUN3plZ29lN3haM3hUUjBLNjRzaHpKVnJ2bW02YjcwQzJmc1UxWWdrczhZMEpUaTQyX1NiNUdR?oc=5" target="_blank" rel="noopener">並みのラーメン店よりうまい？ 麺市場を開く野心的挑戦、セブン「コンビニラーメン」はコーヒーに続く革命的商品か - JBpress</a>
-          <span class="meta">ラーメン経営 | Thu, 07 May 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1RQnBxMmExZ1FRaUp1Z2N2MUlVUWZZS3U1ZFdhYjladnpiR0pBWmhueGY1UDBGLTZUU3RmWUhHamdxdXBIdElfR05MTnkyb2NLM2VCWnhfWkszQmE2eWRabU96aFA2Wm8?oc=5" target="_blank" rel="noopener">「ラーメン店」の倒産動向（2025年） - tdb.co.jp</a>
-          <span class="meta">ラーメン経営 | Sat, 10 Jan 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiXEFVX3lxTE9JM1FCZm5GVllsVXZBZ3RMMEdxYnhGSnBMV3BJamd2OUlTbVJWSkhUNGY4cUhGUVVTNElpYi1IdmEwa0lKYVpPSko0SEpPZHdlM1MzWVhIVWEyODg0?oc=5" target="_blank" rel="noopener">（いま聞く）川田利明さん ラーメン店主・プロレスラー リング降り店経営、転身のわけ - 朝日新聞</a>
-          <span class="meta">ラーメン経営 | Tue, 28 Apr 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMi0AJBVV95cUxNZDVyMDl4UTdYM2dYM1JTd2xFM211NkZZdTh5Um5EelEtRlFndnB5WnpRODBpQnFKenlXWGk3UlBmMlpub3hZekRmUEgyOUN2OU5mVFpPYmpkdkJ1N2EzaXY1a0FFTGFudkd6eGd1YmdkQnktcGRlTm5yY0FKZXF4NThMaWtESGw0RHVqT1E3YVNnVjNDaFg2S29qWllfN0NUT1V4N1o5RVdzZ015TkN4ZTdQR1NvVndNZF9GcXFtN3lMb3pweW1hb2Y1ZE9sOUpmb3JZN2c0UVFtcXVEVjc5d25BOEF5eHl2WTdLS0xzTE1scjl0VzZPWHpqajlWdzN6Q0lhZzQ4cl9lbkVyMVhaV3JCQWE4ZHY0S2hCVmpoMGdpeXptZ0RQdFJkT2kwYzlBNUIwYmJvdWoyMDI4cmxza0t2ZVlHSURTb0xsMEU3cTY?oc=5" target="_blank" rel="noopener">【参加者募集】公開講座｢ラーメン店の経営と食品流通」 - 別府大学</a>
-          <span class="meta">ラーメン経営 | Tue, 09 Sep 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiWkFVX3lxTFBXMUpXR1BmUDZoakZDeklMVExuQmFhZVFyYkRNLXE0WUhWcHlLcTNwN2trLUFQMjZNZTFhRk5SN3ZRMGRBX2lTUnNkUmRnQmk1VDA5cE5jT2VnQQ?oc=5" target="_blank" rel="noopener">『Midnight Ramen Shop』深夜営業のラーメン屋をのんびり経営するゲームがSteamで5月6日発売 - 電ファミニコゲーマー</a>
-          <span class="meta">ラーメン経営 | Tue, 05 May 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiZkFVX3lxTE1fY0p5X0VpcUc1SkFQbzNwaXhTM0NYYXlKa3ZLb0V0WEkxbFc1NDIxdUV6ZFFFLTBNcTVPQmtfeFpqRjI5cWk4QTBXdldKZUxzRTdkN1dZMGc2M3NIVlVldHRLWXNrdw?oc=5" target="_blank" rel="noopener">オープンワールドラーメン店経営SLG『世界島・宅急送』早期アクセス開始！世界や時代を飛び越え、銃撃戦を生き延びてラーメンを届けるハチャメチャ経営 - Game*Spark</a>
-          <span class="meta">ラーメン経営 | Mon, 16 Feb 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiXEFVX3lxTFAxSUtkcHFuNGx1Z3Z4VFJsRURrNjY5Um1WQ0JKSFc1OWgyZ2hOOEhfSG96aUx0NmxyVlpyeXBiWWR5MGxXLVJZSTZQRXZiUzBkSWloeDhRRUtoZjF5?oc=5" target="_blank" rel="noopener">飲食店の約７割が10%超の仕入れコスト増。独自調査で食材費高騰の実態が明らかに - 飲食店ドットコム</a>
-          <span class="meta">食材コスト | Thu, 30 Oct 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiZkFVX3lxTE1ZQ0UzMUpYX2tscl9NTmE5TTB5eTZDZW42ajZyV19qRnBoWlhfNUhIQl90NGQ5NG9WVWpZT3RIWWgydFE3MkVmZVYzd2ZlcmpBNktKZmZLdFdKVkVNbFF0UGR6WkdTUQ?oc=5" target="_blank" rel="noopener">2025年「飲食業」倒産 初の 1,000件超 食材費・人件費上昇が小規模店に大打撃 - 東京商工リサーチ</a>
-          <span class="meta">食材コスト | Tue, 13 Jan 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTE44aE5VWGNNYUkydGR3NXYwNktmYzN0RDNwcDhWMGVSS3FxcWNzZHBlRUdUUHZkendXeG9GQ0ctelVMQVVFUmZsd1liSVBTZ3daZGNWZU9rWS1zRU1jX3dqRU1URVhfazZnMUE?oc=5" target="_blank" rel="noopener">2026年4月の食品値上げ、2798品目 年内初の値上げラッシュへ 「値上げ」一服に不透明感 年後半にラッシュ再燃の可能性 - PR TIMES</a>
-          <span class="meta">食材コスト | Tue, 31 Mar 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiY0FVX3lxTE9OOTlnQVJXazZsM3ktYmg2N3RlMEtUREQ2Uk5vVjRkblZiaF9xd1Z1TWZKdVk5OFRDT0pOejdzTjVlOE91MXozYllVelFqRDdXak5PMnVSUDhyeTJBSjJDQlFscw?oc=5" target="_blank" rel="noopener">今の狙い目は「そうめん」と「めんつゆ」…9月も食品値上げラッシュ 飲食店もため息 調味料や乳製品など1422品目 福岡 - 福岡TNCニュース</a>
-          <span class="meta">食材コスト | Fri, 29 Aug 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiS0FVX3lxTE1kcmNJUEZOck5qdmhvSFZHaElUaGo2Vi1TMTVjcFBheklWaG9Ic0p3Ylc5R21GdHFpVzR1T2FITlg1N3lyTU1XQXhRYw?oc=5" target="_blank" rel="noopener">【税理士監修・2026年4月値上げ一覧】経営への影響は？ガソリン・食品・固定電話・社会保険料まで経営者が今すぐ打つべき対策 - sogyotecho.jp</a>
-          <span class="meta">食材コスト | Tue, 14 Apr 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiXEFVX3lxTE9NS2h3blVJRUt2NFNJZElMU3NGMkJXRndIcXloYmwteHB1UnZuR3lUcWs3Y3JGY3ZtZ1Rjb0t4Rmh5UDRzM281emZaSkV3N0tITUtuTUtVbFhIY3pC?oc=5" target="_blank" rel="noopener">９月の食品値上げは1,422品目。飲食店がコスト増の“新常態”を乗り切る３つの対策 - 飲食店ドットコム</a>
-          <span class="meta">食材コスト | Tue, 16 Sep 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiZ0FVX3lxTE00YU9VMm9teGR6WTBvdkNKd0tyUFhmdGFpUEJRdU9VTDBaVk9uRGZiTkFKWjIwUENGd2hBMWZkdWRDMVd3MGUxNUdBajluS05MQU1DOUZIME5rZU03YlpqVXlBdWhkV2c?oc=5" target="_blank" rel="noopener">最低賃金 愛知は1140円に 飲食店「値上げ考えてない 生活きりつめるしか…」コメの仕入れ値は月に8万円→15万円ほどに - TBS NEWS DIG</a>
-          <span class="meta">食材コスト | Tue, 05 Aug 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTE1YUl9TZ2poeEtiUVdJWlVQZnhLcUxWOE85STF5amVDY3FPTE5LeGc1QnlLWDdQS0M5dl9FY2pxVnJXZHdjWDFfVU00OXpPSEZsQ2h6RENRYk5OajI4MmJyVjlnVUt2Q2x5d1E?oc=5" target="_blank" rel="noopener">止まらない飲食店の値上げ。売上と客数を落とさない食材高騰対策方法 - フーズチャネル</a>
-          <span class="meta">食材コスト | Thu, 21 Dec 2023</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMidkFVX3lxTE1ONDZtNWhLM1VSbllBM3hnOXo3dnZ5Si14Q3J4OHVOOWV1UWZVakRkaWNsN1diVlBNdWkyRlV0d3dZdG43NUZGam42YzRjQkZ6NmJ4NUFKLVdBcElWaVRjQ3VxVnFmRThWcnZNWU02blpEcnNqZkE?oc=5" target="_blank" rel="noopener">食材高騰、こども食堂ピンチ 「命支える場」で値上げ難しく 食品ロス中心の寄付に限界も - 産経ニュース</a>
-          <span class="meta">食材コスト | Sat, 29 Mar 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiXEFVX3lxTFBERWx1QTZtRzRpZWVvaXltVExMT0tJRlc5QlNwajRNWXFfMW9ibnZ2azJBVTgyQ0drSlRxTDNURmNLLUI0SjVDWmkxX0VHcVdJbWUwT1RPNG9wZjBm?oc=5" target="_blank" rel="noopener">10月の食品値上げは3,024品目、半年ぶりのラッシュ。物流費・人件費高騰を乗り切る対策とは - 飲食店ドットコム</a>
-          <span class="meta">食材コスト | Thu, 09 Oct 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMibEFVX3lxTE5DTWJieWFrSnh6UmhWd3A0aEhJTExld2pRWUNsaDIxRjdZR3hPTy1fZFE5UW51c3JFNWdiNVhvYnI4X3laNk9ocWRzODEyank1WkREZ1hMNE1ISTd0dXB5SHVDcVFxYm9GQWh3NA?oc=5" target="_blank" rel="noopener">3月の外食売上高5.7%増 値上げで単価上昇、客数は伸び悩み - 日本経済新聞</a>
-          <span class="meta">外食売上動向 | Mon, 27 Apr 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiVEFVX3lxTE41S1NwZjR1UHFwRGtHUGh3QWhqcHVjU2Y2SU1jN00tQWRuR0VJTWlheVlfVTJMRTBmS0tlRmtuMVBVMXhpVGFuSExMNnJpRWkxMUsteg?oc=5" target="_blank" rel="noopener">日本フードサービス協会／1月の外食売上8.5％増、年始の家族客や週末が好調 - 流通ニュース</a>
-          <span class="meta">外食売上動向 | Wed, 25 Feb 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxNU2x0eF9WSEN3Mm1JVlJ2Sktoc2lrWVRDbHJNMXJyUEhUYkt6a0ExdFZBSzIwZGxYSEM2RHdhN195U2MzTE84TFhRb1FGUlAwOVRnNDNFT3B2bW9EZDQ2emQwaUR2a2MwOXlLNWpQeHNvNEQ5VjdsaXpWS3B0Y0JsUHdadTVWdw?oc=5" target="_blank" rel="noopener">外食25年全店売上高7.3％増 単価上昇で4年連続プラスも客数鈍化 JF調査 - projectdesign.jp</a>
-          <span class="meta">外食売上動向 | Tue, 03 Mar 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiiAFBVV95cUxNbUpFZjdGTDhtRERZNS02Y01UN3kxdnV4Wml2RUNFMEZES194SXhudmVSQ0puYzNndXRLV3FPTnNFb01oak1nNGtrZ0JibUMtMHhwTTZjdXhaXzZ0cUdqd21pSUVaaGZTVWE1SF9PRDE0b1B5UHkxb0xrSjJaVFkwWVFDZlRtMmZC?oc=5" target="_blank" rel="noopener">2026年2月度外食産業売上は前年同月比でプラス6.6％（不破雷蔵） - エキスパート - Yahoo!ニュース</a>
-          <span class="meta">外食売上動向 | Sun, 29 Mar 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiWkFVX3lxTFBVVzNKN1pnRVdXbTU0cGR1VGFxX0o5cTlkNTdxeG4yX0ZmMTU4ZE1SdFNsdFYxbDR3aXllLVFzWk5OaHVsSHpCaWFQVFdibVI5OGl3Q0VpbXpvZw?oc=5" target="_blank" rel="noopener">2月外食統計｜前年比106.6％､値上げとお得なキャンペーン施策で客数維持 - 流通スーパーニュース</a>
-          <span class="meta">外食売上動向 | Wed, 25 Mar 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiX0FVX3lxTFBhTkx4Y1VTV1lCaTV0THZNWlJJU1ZlRWpXWHNxLUE1Sy15NDhfSXkxa1JkeTFfQ2g0bDdnbkI4cjhvcHRSMVRQLVI0VDVhNm9qWjNiSnAyNmpLMWdjR09V?oc=5" target="_blank" rel="noopener">回転ずし､焼肉チェーンでも静かに客離れが進む…値上げが相次ぐ外食店に行ける層･行けない層の"残酷な格差" - 東洋経済オンライン</a>
-          <span class="meta">外食売上動向 | Sun, 22 Feb 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiYkFVX3lxTE5aTzFxd2NwT1ZtZlhkdG5aWFlxaHFnODYwbjBRaTk2cWxGUE1fLURCM2dSWUtyZlI0cDNRMFlMTXBUQW51anJucUlQNnBIVi0yQWhOTXNHaE43V0JiMEpwTUZB?oc=5" target="_blank" rel="noopener">【外食市場25年12月】全体106％、最需要期だが伸び率はさほど 飲酒業態は今年一番のハネ - foodrink.co.jp</a>
-          <span class="meta">外食売上動向 | Tue, 27 Jan 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiVEFVX3lxTE4xcHJUWDRFSS1HMWtSSm0tR05OQmNPaWlhSHBkZUh1SkVvd2xrVWxMMUdkZEZaMk9sdzFpWXpmTTZBdzY0amtnT011S0JmYl8wNjExYQ?oc=5" target="_blank" rel="noopener">日本フードサービス協会／2月の外食売上6.6％増、お得なキャンペーンで需要堅調 - 流通ニュース</a>
-          <span class="meta">外食売上動向 | Wed, 25 Mar 2026</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiU0FVX3lxTFBxNW5xZGJDSTlzYW56SXc0VmJ4WlB4ZjhpM1BjX0VwZjhHcklUYnpELVNhX3I4alIwd3NfeU1GbEVkSk9xQTBkLUNwdDhqRUlDUUpz?oc=5" target="_blank" rel="noopener">【値上げショック】外食データが示す2026年の生存戦略 - newspicks.com</a>
-          <span class="meta">外食売上動向 | Wed, 24 Dec 2025</span>
-        </div><div class="article">
-          <a href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE15WFFVSjBNVHp4c3F4S0RKMnpYTkRLNk4wNGNOandzMkJ3T3YtV25HZzFTa08xZjhDSzFUTExmbTJpZFlsa0F0U3FhNTBZLXhKc29IQ1UtWkMxdw?oc=5" target="_blank" rel="noopener">12月外食統計｜全店売上高6.0％増/年末の家族客の外食需要が好調 - 流通スーパーニュース</a>
-          <span class="meta">外食売上動向 | Mon, 26 Jan 2026</span>
-        </div>
+    <div class="stat-card" style="animation-delay:0.3s">
+      <div class="stat-label">更新時刻</div>
+      <div class="stat-value count-anim" style="font-size:1.4rem">2026-05-17 18:49</div>
     </div>
   </div>
-  <footer>自動生成 by ramen-news-bot | 2026-05-17T18:49:05</footer>
+
+  <!-- Topics & Actions -->
+  <div class="grid-2">
+    <div class="card" style="animation-delay:0.35s">
+      <div class="card-title">主要トピック</div>
+      <div class="topics-wrap">
+        <span class="topic-tag" style="animation-delay:0.0s">深刻な原材料費・人件費・物流費の高騰</span><span class="topic-tag" style="animation-delay:0.1s">値上げによる外食売上増と客数伸び悩みの二極化</span><span class="topic-tag" style="animation-delay:0.2s">ラーメン業界の競争激化と倒産件数の増加</span><span class="topic-tag" style="animation-delay:0.30000000000000004s">経営効率化と差別化戦略の重要性</span>
+      </div>
+    </div>
+    <div class="card" style="animation-delay:0.4s">
+      <div class="card-title">推奨アクション</div>
+      <ul class="action-list">
+        <li class="action-item" style="animation-delay:0.0s"><span class="action-num">01</span>仕入れ先の見直し、食品ロス削減、オペレーション改善など徹底したコスト管理と効率化を推進する。</li><li class="action-item" style="animation-delay:0.15s"><span class="action-num">02</span>原価率に基づいた戦略的な価格改定と、高付加価値メニューや限定メニューで顧客単価向上と集客を図る。</li><li class="action-item" style="animation-delay:0.3s"><span class="action-num">03</span>独自の味、サービス、コンセプトを強化し、SNSやデジタルツールを活用して顧客体験価値とブランド認知度を高める。</li><li class="action-item" style="animation-delay:0.44999999999999996s"><span class="action-num">04</span>業界セミナー参加やM&A含め、最新の経営ノウハウを学び、変化する市場環境に適応できる経営戦略を構築する。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Articles -->
+  <div class="card" style="animation-delay:0.45s">
+    <div class="card-title">収集記事 (30件)</div>
+    <div class="articles-grid">
+      <a class="article-card" href="https://news.google.com/rss/articles/CBMif0FVX3lxTE1BbUpIQkpBdmxhaFNhbzN4MzFTSGd3bUpvTUlqcVUtZ0k5V0x3dHFvYV9mdVNvX1dSbUJRcGd4WHFoYlJSMHhQUUNhbzhvRUtPZ3RMblZUNUw1NS1ocEtLQ3VxY0ZQLWVtcEVQN090ajVwUVk5RUlwTTVVZ2hFSW8?oc=5" target="_blank" rel="noopener" style="animation-delay:0.0s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">ハチバン、創業家が取締役退任 経営から外れるのは初（北國新聞社） - Yahoo!ニュース</div>
+          <div class="article-date">Wed, 13 May 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiakFVX3lxTE5NN2hrNy04M29uel9fV2RfWllXS3lvRWptRU4zcWktZ3dmX3Y3SzN0NWhBMHJ6Q1E4UWRYUms5d1B4cHlsZktwOFpnR1pUbWV6dTZTTDdMUElQTXA0cU12VmlIMWdwb2x0S3c?oc=5" target="_blank" rel="noopener" style="animation-delay:0.05s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">「2026年版 ラーメン経営の最前線」セミナー開催のお知らせ - PR TIMES</div>
+          <div class="article-date">Mon, 27 Apr 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiYEFVX3lxTFB1bUk0MW0yNWpCMUdvZlFLT19XV0JtYlVQTE81SmxDX193ZVBTUUVUcEx2SjVhOEIzRUJNRTBFWjE2RmdCV01PLVA5ZG5qc1ZUSmFmd3NybkZpT19feldlVg?oc=5" target="_blank" rel="noopener" style="animation-delay:0.1s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">ラーメン経営の最前線（2026年6月開催） | M&Aならストライク【東証プライム上場グループ】 - ストライク</div>
+          <div class="article-date">Tue, 14 Apr 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTFA1cXNLOEkxUnVxWmdVdE5NV2Izal8tVjVkbk90NXVRU2tpZXVtTFhyVWE5QlRBakpWR28xaTczaG5yTlk4VDVNQ2huN3BoVGxic2h0MGJn?oc=5" target="_blank" rel="noopener" style="animation-delay:0.15000000000000002s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">「2026年版 ラーメン経営の最前線」セミナー開催のお知らせ - フーズチャネル</div>
+          <div class="article-date">Mon, 27 Apr 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTE1PU2V1cUE5QzNRd3N4SjE5SUstYmt6dEVUN3plZ29lN3haM3hUUjBLNjRzaHpKVnJ2bW02YjcwQzJmc1UxWWdrczhZMEpUaTQyX1NiNUdR?oc=5" target="_blank" rel="noopener" style="animation-delay:0.2s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">並みのラーメン店よりうまい？ 麺市場を開く野心的挑戦、セブン「コンビニラーメン」はコーヒーに続く革命的商品か - JBpress</div>
+          <div class="article-date">Thu, 07 May 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1RQnBxMmExZ1FRaUp1Z2N2MUlVUWZZS3U1ZFdhYjladnpiR0pBWmhueGY1UDBGLTZUU3RmWUhHamdxdXBIdElfR05MTnkyb2NLM2VCWnhfWkszQmE2eWRabU96aFA2Wm8?oc=5" target="_blank" rel="noopener" style="animation-delay:0.25s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">「ラーメン店」の倒産動向（2025年） - tdb.co.jp</div>
+          <div class="article-date">Sat, 10 Jan 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiXEFVX3lxTE9JM1FCZm5GVllsVXZBZ3RMMEdxYnhGSnBMV3BJamd2OUlTbVJWSkhUNGY4cUhGUVVTNElpYi1IdmEwa0lKYVpPSko0SEpPZHdlM1MzWVhIVWEyODg0?oc=5" target="_blank" rel="noopener" style="animation-delay:0.30000000000000004s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">（いま聞く）川田利明さん ラーメン店主・プロレスラー リング降り店経営、転身のわけ - 朝日新聞</div>
+          <div class="article-date">Tue, 28 Apr 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMi0AJBVV95cUxNZDVyMDl4UTdYM2dYM1JTd2xFM211NkZZdTh5Um5EelEtRlFndnB5WnpRODBpQnFKenlXWGk3UlBmMlpub3hZekRmUEgyOUN2OU5mVFpPYmpkdkJ1N2EzaXY1a0FFTGFudkd6eGd1YmdkQnktcGRlTm5yY0FKZXF4NThMaWtESGw0RHVqT1E3YVNnVjNDaFg2S29qWllfN0NUT1V4N1o5RVdzZ015TkN4ZTdQR1NvVndNZF9GcXFtN3lMb3pweW1hb2Y1ZE9sOUpmb3JZN2c0UVFtcXVEVjc5d25BOEF5eHl2WTdLS0xzTE1scjl0VzZPWHpqajlWdzN6Q0lhZzQ4cl9lbkVyMVhaV3JCQWE4ZHY0S2hCVmpoMGdpeXptZ0RQdFJkT2kwYzlBNUIwYmJvdWoyMDI4cmxza0t2ZVlHSURTb0xsMEU3cTY?oc=5" target="_blank" rel="noopener" style="animation-delay:0.35000000000000003s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">【参加者募集】公開講座｢ラーメン店の経営と食品流通」 - 別府大学</div>
+          <div class="article-date">Tue, 09 Sep 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTFBXMUpXR1BmUDZoakZDeklMVExuQmFhZVFyYkRNLXE0WUhWcHlLcTNwN2trLUFQMjZNZTFhRk5SN3ZRMGRBX2lTUnNkUmRnQmk1VDA5cE5jT2VnQQ?oc=5" target="_blank" rel="noopener" style="animation-delay:0.4s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">『Midnight Ramen Shop』深夜営業のラーメン屋をのんびり経営するゲームがSteamで5月6日発売 - 電ファミニコゲーマー</div>
+          <div class="article-date">Tue, 05 May 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiZkFVX3lxTE1fY0p5X0VpcUc1SkFQbzNwaXhTM0NYYXlKa3ZLb0V0WEkxbFc1NDIxdUV6ZFFFLTBNcTVPQmtfeFpqRjI5cWk4QTBXdldKZUxzRTdkN1dZMGc2M3NIVlVldHRLWXNrdw?oc=5" target="_blank" rel="noopener" style="animation-delay:0.45s">
+          <div class="article-label">ラーメン経営</div>
+          <div class="article-title">オープンワールドラーメン店経営SLG『世界島・宅急送』早期アクセス開始！世界や時代を飛び越え、銃撃戦を生き延びてラーメンを届けるハチャメチャ経営 - Game*Spark</div>
+          <div class="article-date">Mon, 16 Feb 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiXEFVX3lxTFAxSUtkcHFuNGx1Z3Z4VFJsRURrNjY5Um1WQ0JKSFc1OWgyZ2hOOEhfSG96aUx0NmxyVlpyeXBiWWR5MGxXLVJZSTZQRXZiUzBkSWloeDhRRUtoZjF5?oc=5" target="_blank" rel="noopener" style="animation-delay:0.5s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">飲食店の約７割が10%超の仕入れコスト増。独自調査で食材費高騰の実態が明らかに - 飲食店ドットコム</div>
+          <div class="article-date">Thu, 30 Oct 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiZkFVX3lxTE1ZQ0UzMUpYX2tscl9NTmE5TTB5eTZDZW42ajZyV19qRnBoWlhfNUhIQl90NGQ5NG9WVWpZT3RIWWgydFE3MkVmZVYzd2ZlcmpBNktKZmZLdFdKVkVNbFF0UGR6WkdTUQ?oc=5" target="_blank" rel="noopener" style="animation-delay:0.55s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">2025年「飲食業」倒産 初の 1,000件超 食材費・人件費上昇が小規模店に大打撃 - 東京商工リサーチ</div>
+          <div class="article-date">Tue, 13 Jan 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiakFVX3lxTE44aE5VWGNNYUkydGR3NXYwNktmYzN0RDNwcDhWMGVSS3FxcWNzZHBlRUdUUHZkendXeG9GQ0ctelVMQVVFUmZsd1liSVBTZ3daZGNWZU9rWS1zRU1jX3dqRU1URVhfazZnMUE?oc=5" target="_blank" rel="noopener" style="animation-delay:0.6000000000000001s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">2026年4月の食品値上げ、2798品目 年内初の値上げラッシュへ 「値上げ」一服に不透明感 年後半にラッシュ再燃の可能性 - PR TIMES</div>
+          <div class="article-date">Tue, 31 Mar 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiY0FVX3lxTE9OOTlnQVJXazZsM3ktYmg2N3RlMEtUREQ2Uk5vVjRkblZiaF9xd1Z1TWZKdVk5OFRDT0pOejdzTjVlOE91MXozYllVelFqRDdXak5PMnVSUDhyeTJBSjJDQlFscw?oc=5" target="_blank" rel="noopener" style="animation-delay:0.65s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">今の狙い目は「そうめん」と「めんつゆ」…9月も食品値上げラッシュ 飲食店もため息 調味料や乳製品など1422品目 福岡 - 福岡TNCニュース</div>
+          <div class="article-date">Fri, 29 Aug 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiS0FVX3lxTE1kcmNJUEZOck5qdmhvSFZHaElUaGo2Vi1TMTVjcFBheklWaG9Ic0p3Ylc5R21GdHFpVzR1T2FITlg1N3lyTU1XQXhRYw?oc=5" target="_blank" rel="noopener" style="animation-delay:0.7000000000000001s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">【税理士監修・2026年4月値上げ一覧】経営への影響は？ガソリン・食品・固定電話・社会保険料まで経営者が今すぐ打つべき対策 - sogyotecho.jp</div>
+          <div class="article-date">Tue, 14 Apr 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiXEFVX3lxTE9NS2h3blVJRUt2NFNJZElMU3NGMkJXRndIcXloYmwteHB1UnZuR3lUcWs3Y3JGY3ZtZ1Rjb0t4Rmh5UDRzM281emZaSkV3N0tITUtuTUtVbFhIY3pC?oc=5" target="_blank" rel="noopener" style="animation-delay:0.75s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">９月の食品値上げは1,422品目。飲食店がコスト増の“新常態”を乗り切る３つの対策 - 飲食店ドットコム</div>
+          <div class="article-date">Tue, 16 Sep 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiZ0FVX3lxTE00YU9VMm9teGR6WTBvdkNKd0tyUFhmdGFpUEJRdU9VTDBaVk9uRGZiTkFKWjIwUENGd2hBMWZkdWRDMVd3MGUxNUdBajluS05MQU1DOUZIME5rZU03YlpqVXlBdWhkV2c?oc=5" target="_blank" rel="noopener" style="animation-delay:0.8s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">最低賃金 愛知は1140円に 飲食店「値上げ考えてない 生活きりつめるしか…」コメの仕入れ値は月に8万円→15万円ほどに - TBS NEWS DIG</div>
+          <div class="article-date">Tue, 05 Aug 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiakFVX3lxTE1YUl9TZ2poeEtiUVdJWlVQZnhLcUxWOE85STF5amVDY3FPTE5LeGc1QnlLWDdQS0M5dl9FY2pxVnJXZHdjWDFfVU00OXpPSEZsQ2h6RENRYk5OajI4MmJyVjlnVUt2Q2x5d1E?oc=5" target="_blank" rel="noopener" style="animation-delay:0.8500000000000001s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">止まらない飲食店の値上げ。売上と客数を落とさない食材高騰対策方法 - フーズチャネル</div>
+          <div class="article-date">Thu, 21 Dec 2023</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMidkFVX3lxTE1ONDZtNWhLM1VSbllBM3hnOXo3dnZ5Si14Q3J4OHVOOWV1UWZVakRkaWNsN1diVlBNdWkyRlV0d3dZdG43NUZGam42YzRjQkZ6NmJ4NUFKLVdBcElWaVRjQ3VxVnFmRThWcnZNWU02blpEcnNqZkE?oc=5" target="_blank" rel="noopener" style="animation-delay:0.9s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">食材高騰、こども食堂ピンチ 「命支える場」で値上げ難しく 食品ロス中心の寄付に限界も - 産経ニュース</div>
+          <div class="article-date">Sat, 29 Mar 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiXEFVX3lxTFBERWx1QTZtRzRpZWVvaXltVExMT0tJRlc5QlNwajRNWXFfMW9ibnZ2azJBVTgyQ0drSlRxTDNURmNLLUI0SjVDWmkxX0VHcVdJbWUwT1RPNG9wZjBm?oc=5" target="_blank" rel="noopener" style="animation-delay:0.9500000000000001s">
+          <div class="article-label">食材コスト</div>
+          <div class="article-title">10月の食品値上げは3,024品目、半年ぶりのラッシュ。物流費・人件費高騰を乗り切る対策とは - 飲食店ドットコム</div>
+          <div class="article-date">Thu, 09 Oct 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMibEFVX3lxTE5DTWJieWFrSnh6UmhWd3A0aEhJTExld2pRWUNsaDIxRjdZR3hPTy1fZFE5UW51c3JFNWdiNVhvYnI4X3laNk9ocWRzODEyank1WkREZ1hMNE1ISTd0dXB5SHVDcVFxYm9GQWh3NA?oc=5" target="_blank" rel="noopener" style="animation-delay:1.0s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">3月の外食売上高5.7%増 値上げで単価上昇、客数は伸び悩み - 日本経済新聞</div>
+          <div class="article-date">Mon, 27 Apr 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiVEFVX3lxTE41S1NwZjR1UHFwRGtHUGh3QWhqcHVjU2Y2SU1jN00tQWRuR0VJTWlheVlfVTJMRTBmS0tlRmtuMVBVMXhpVGFuSExMNnJpRWkxMUsteg?oc=5" target="_blank" rel="noopener" style="animation-delay:1.05s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">日本フードサービス協会／1月の外食売上8.5％増、年始の家族客や週末が好調 - 流通ニュース</div>
+          <div class="article-date">Wed, 25 Feb 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMihgFBVV95cUxNU2x0eF9WSEN3Mm1JVlJ2Sktoc2lrWVRDbHJNMXJyUEhUYkt6a0ExdFZBSzIwZGxYSEM2RHdhN195U2MzTE84TFhRb1FGUlAwOVRnNDNFT3B2bW9EZDQ2emQwaUR2a2MwOXlLNWpQeHNvNEQ5VjdsaXpWS3B0Y0JsUHdadTVWdw?oc=5" target="_blank" rel="noopener" style="animation-delay:1.1s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">外食25年全店売上高7.3％増 単価上昇で4年連続プラスも客数鈍化 JF調査 - projectdesign.jp</div>
+          <div class="article-date">Tue, 03 Mar 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiiAFBVV95cUxNbUpFZjdGTDhtRERZNS02Y01UN3kxdnV4Wml2RUNFMEZES194SXhudmVSQ0puYzNndXRLV3FPTnNFb01oak1nNGtrZ0JibUMtMHhwTTZjdXhaXzZ0cUdqd21pSUVaaGZTVWE1SF9PRDE0b1B5UHkxb0xrSjJaVFkwWVFDZlRtMmZC?oc=5" target="_blank" rel="noopener" style="animation-delay:1.1500000000000001s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">2026年2月度外食産業売上は前年同月比でプラス6.6％（不破雷蔵） - エキスパート - Yahoo!ニュース</div>
+          <div class="article-date">Sun, 29 Mar 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTFBVVzNKN1pnRVdXbTU0cGR1VGFxX0o5cTlkNTdxeG4yX0ZmMTU4ZE1SdFNsdFYxbDR3aXllLVFzWk5OaHVsSHpCaWFQVFdibVI5OGl3Q0VpbXpvZw?oc=5" target="_blank" rel="noopener" style="animation-delay:1.2000000000000002s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">2月外食統計｜前年比106.6％､値上げとお得なキャンペーン施策で客数維持 - 流通スーパーニュース</div>
+          <div class="article-date">Wed, 25 Mar 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiX0FVX3lxTFBhTkx4Y1VTV1lCaTV0THZNWlJJU1ZlRWpXWHNxLUE1Sy15NDhfSXkxa1JkeTFfQ2g0bDdnbkI4cjhvcHRSMVRQLVI0VDVhNm9qWjNiSnAyNmpLMWdjR09V?oc=5" target="_blank" rel="noopener" style="animation-delay:1.25s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">回転ずし､焼肉チェーンでも静かに客離れが進む…値上げが相次ぐ外食店に行ける層･行けない層の"残酷な格差" - 東洋経済オンライン</div>
+          <div class="article-date">Sun, 22 Feb 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiYkFVX3lxTE5aTzFxd2NwT1ZtZlhkdG5aWFlxaHFnODYwbjBRaTk2cWxGUE1fLURCM2dSWUtyZlI0cDNRMFlMTXBUQW51anJucUlQNnBIVi0yQWhOTXNHaE43V0JiMEpwTUZB?oc=5" target="_blank" rel="noopener" style="animation-delay:1.3s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">【外食市場25年12月】全体106％、最需要期だが伸び率はさほど 飲酒業態は今年一番のハネ - foodrink.co.jp</div>
+          <div class="article-date">Tue, 27 Jan 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiVEFVX3lxTE4xcHJUWDRFSS1HMWtSSm0tR05OQmNPaWlhSHBkZUh1SkVvd2xrVWxMMUdkZEZaMk9sdzFpWXpmTTZBdzY0amtnT011S0JmYl8wNjExYQ?oc=5" target="_blank" rel="noopener" style="animation-delay:1.35s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">日本フードサービス協会／2月の外食売上6.6％増、お得なキャンペーンで需要堅調 - 流通ニュース</div>
+          <div class="article-date">Wed, 25 Mar 2026</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiU0FVX3lxTFBxNW5xZGJDSTlzYW56SXc0VmJ4WlB4ZjhpM1BjX0VwZjhHcklUYnpELVNhX3I4alIwd3NfeU1GbEVkSk9xQTBkLUNwdDhqRUlDUUpz?oc=5" target="_blank" rel="noopener" style="animation-delay:1.4000000000000001s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">【値上げショック】外食データが示す2026年の生存戦略 - newspicks.com</div>
+          <div class="article-date">Wed, 24 Dec 2025</div>
+        </a><a class="article-card" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE15WFFVSjBNVHp4c3F4S0RKMnpYTkRLNk4wNGNOandzMkJ3T3YtV25HZzFTa08xZjhDSzFUTExmbTJpZFlsa0F0U3FhNTBZLXhKc29IQ1UtWkMxdw?oc=5" target="_blank" rel="noopener" style="animation-delay:1.4500000000000002s">
+          <div class="article-label">外食売上動向</div>
+          <div class="article-title">12月外食統計｜全店売上高6.0％増/年末の家族客の外食需要が好調 - 流通スーパーニュース</div>
+          <div class="article-date">Mon, 26 Jan 2026</div>
+        </a>
+    </div>
+  </div>
+
+  <footer>
+    自動生成 by ramen-news-bot &nbsp;·&nbsp; Powered by Gemini 2.5 Flash &nbsp;·&nbsp; 2026-05-17 18:49:05
+  </footer>
+
+</div>
 </body>
 </html>
