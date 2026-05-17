@@ -111,9 +111,10 @@ def build():
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0f">
   <title>ラーメン経営情報ボード — {TODAY}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     :root {{
       --alert: {cfg["color"]};
@@ -126,44 +127,68 @@ def build():
       --text: #e4e4f0;
       --muted: #5a5a70;
       --radius: 14px;
+      /* モバイルベースのスペーシング */
+      --pad-x: 16px;
+      --pad-card: 16px;
+      --gap: 12px;
     }}
+    /* タブレット以上 */
+    @media(min-width:640px) {{
+      :root {{ --pad-x:24px; --pad-card:22px; --gap:16px; }}
+    }}
+    @media(min-width:1024px) {{
+      :root {{ --pad-x:32px; --pad-card:24px; }}
+    }}
+
+    html {{ -webkit-text-size-adjust:100%; }} /* iOS自動拡大防止 */
     body {{
-      font-family: 'Inter','Hiragino Sans',sans-serif;
+      font-family: 'Inter','Hiragino Sans','Noto Sans JP',sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      /* iOSのバウンススクロール時に背景が白くならないよう */
+      overscroll-behavior: none;
     }}
     body::before {{
       content:'';
       position:fixed;
       inset:0;
-      background: radial-gradient(ellipse 60% 40% at 15% 10%, {cfg["glow"]} 0%, transparent 60%),
-                  radial-gradient(ellipse 50% 40% at 85% 85%, rgba(99,102,241,0.06) 0%, transparent 60%);
+      background: radial-gradient(ellipse 80% 50% at 15% 10%, {cfg["glow"]} 0%, transparent 60%),
+                  radial-gradient(ellipse 60% 50% at 85% 85%, rgba(99,102,241,0.06) 0%, transparent 60%);
       animation: bgBreath 10s ease-in-out infinite alternate;
       pointer-events:none;
       z-index:0;
     }}
     @keyframes bgBreath {{
-      from {{ opacity:.5; transform:scale(1); }}
-      to   {{ opacity:1;  transform:scale(1.05); }}
+      from {{ opacity:.4; transform:scale(1); }}
+      to   {{ opacity:.9; transform:scale(1.04); }}
     }}
-    .wrap {{ position:relative; z-index:1; max-width:1060px; margin:0 auto; padding:28px 20px 80px; }}
+    /* アニメーション省エネ設定 */
+    @media(prefers-reduced-motion:reduce) {{
+      *, *::before, *::after {{ animation-duration:.01ms !important; transition-duration:.01ms !important; }}
+    }}
+
+    .wrap {{ position:relative; z-index:1; max-width:1060px; margin:0 auto; padding:20px var(--pad-x) 60px; }}
 
     /* ── Header ── */
     header {{
       display:flex; align-items:center; justify-content:space-between;
-      padding-bottom:28px; animation: fadeDown .5s ease both;
+      padding-bottom:20px; animation: fadeDown .5s ease both;
+      gap:12px;
     }}
-    .h-title {{ font-size:clamp(1.2rem,2.5vw,1.6rem); font-weight:900; letter-spacing:-.02em;
+    .h-title {{
+      font-size:clamp(1.05rem,4vw,1.5rem); font-weight:900; letter-spacing:-.02em;
       background:linear-gradient(120deg,#fff 30%,{cfg["color"]});
       -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      line-height:1.2;
     }}
-    .h-sub {{ color:var(--muted); font-size:.78rem; margin-top:3px; }}
+    .h-sub {{ color:var(--muted); font-size:.72rem; margin-top:3px; }}
     .live-badge {{
-      display:inline-flex; align-items:center; gap:6px;
+      flex-shrink:0;
+      display:inline-flex; align-items:center; gap:5px;
       background:rgba(46,213,115,.08); border:1px solid rgba(46,213,115,.25);
-      color:#2ed573; font-size:.7rem; font-weight:700; padding:4px 11px;
-      border-radius:20px; letter-spacing:.06em;
+      color:#2ed573; font-size:.65rem; font-weight:700; padding:5px 10px;
+      border-radius:20px; letter-spacing:.06em; white-space:nowrap;
     }}
     .live-dot {{ width:6px;height:6px;background:#2ed573;border-radius:50%;
       animation:livePulse 1.4s ease-in-out infinite; }}
@@ -172,135 +197,149 @@ def build():
     /* ── Alert hero ── */
     .alert-hero {{
       background:var(--alert-bg); border:1px solid {cfg["color"]}60;
-      border-radius:20px; padding:28px 32px; margin-bottom:20px;
+      border-radius:18px; padding:20px var(--pad-card); margin-bottom:var(--gap);
       position:relative; overflow:hidden;
       animation:fadeUp .45s ease .05s both;
-      box-shadow:0 0 50px var(--alert-glow), inset 0 1px 0 rgba(255,255,255,.04);
+      box-shadow:0 0 40px var(--alert-glow), inset 0 1px 0 rgba(255,255,255,.04);
     }}
     .alert-hero::after {{
-      content:''; position:absolute; top:-60px; right:-60px;
-      width:260px; height:260px;
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:200px; height:200px;
       background:radial-gradient(circle,var(--alert-glow) 0%,transparent 70%);
       pointer-events:none;
     }}
-    .alert-row {{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }}
+    .alert-row {{ display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }}
     .alert-badge {{
       background:var(--alert); color:#000; font-size:.7rem; font-weight:900;
-      padding:4px 12px; border-radius:20px; letter-spacing:.1em;
+      padding:5px 12px; border-radius:20px; letter-spacing:.1em;
       animation:badgePop .4s cubic-bezier(.34,1.56,.64,1) .3s both;
-      box-shadow:0 0 18px var(--alert-glow);
+      box-shadow:0 0 16px var(--alert-glow);
     }}
     @keyframes badgePop {{ from{{transform:scale(0);opacity:0}} to{{transform:scale(1);opacity:1}} }}
-    .alert-label-txt {{ color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; }}
+    .alert-label-txt {{ color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; }}
     .headline {{
-      font-size:clamp(1.1rem,2.5vw,1.4rem); font-weight:800; line-height:1.4;
+      font-size:clamp(1rem,3.5vw,1.35rem); font-weight:800; line-height:1.5;
       color:#fff; letter-spacing:-.01em;
     }}
 
+    /* ── Stats row ── */
+    .stats-row {{
+      display:grid;
+      grid-template-columns: repeat(3,1fr);
+      gap:var(--gap); margin-bottom:var(--gap);
+    }}
+    /* スマホでは2列→3列はきつい場合があるが数字が大きいので2列にする */
+    @media(max-width:400px) {{ .stats-row {{ grid-template-columns:1fr 1fr; }} }}
+    .stat-card {{
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius); padding:14px var(--pad-card);
+      animation:fadeUp .45s ease both;
+    }}
+    /* ホバーはマウスがある端末のみ */
+    @media(hover:hover) {{
+      .stat-card:hover {{ transform:translateY(-2px); border-color:rgba(255,255,255,.14); transition:transform .2s,border-color .2s; }}
+    }}
+    .stat-label {{ color:var(--muted); font-size:.62rem; text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }}
+    .stat-value {{ font-size:clamp(1.4rem,4vw,1.8rem); font-weight:900; line-height:1; color:var(--text); }}
+    .stat-value.accent {{ color:var(--alert); }}
+
     /* ── Grid ── */
-    .grid-main {{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }}
-    @media(max-width:640px){{ .grid-main{{grid-template-columns:1fr}} }}
+    .grid-main {{ display:grid; grid-template-columns:1fr; gap:var(--gap); margin-bottom:var(--gap); }}
+    @media(min-width:700px) {{ .grid-main {{ grid-template-columns:1fr 1fr; }} }}
 
     /* ── Card base ── */
     .card {{
       background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--radius); padding:22px;
+      border-radius:var(--radius); padding:var(--pad-card);
       animation:fadeUp .45s ease both;
     }}
     .card-title {{
-      font-size:.68rem; text-transform:uppercase; letter-spacing:.1em;
-      color:var(--muted); margin-bottom:16px;
+      font-size:.65rem; text-transform:uppercase; letter-spacing:.1em;
+      color:var(--muted); margin-bottom:14px;
       display:flex; align-items:center; gap:8px;
     }}
     .card-title::after {{ content:''; flex:1; height:1px; background:var(--border); }}
 
     /* ── Highlights ── */
-    .highlights-list {{ display:flex; flex-direction:column; gap:12px; }}
+    .highlights-list {{ display:flex; flex-direction:column; gap:10px; }}
     .highlight-card {{
       background:var(--surface2); border:1px solid var(--border);
-      border-radius:10px; padding:14px;
-      transition:border-color .2s;
+      border-radius:10px; padding:12px;
     }}
-    .highlight-card:hover {{ border-color:rgba(255,255,255,.15); }}
     .highlight-tag {{
-      display:inline-block; font-size:.68rem; font-weight:700;
+      display:inline-block; font-size:.66rem; font-weight:700;
       padding:2px 8px; border-radius:6px; border:1px solid;
-      margin-bottom:8px; letter-spacing:.04em;
+      margin-bottom:7px; letter-spacing:.04em;
     }}
-    .highlight-text {{ font-size:.85rem; line-height:1.65; color:var(--text); }}
+    .highlight-text {{ font-size:.84rem; line-height:1.7; color:var(--text); }}
 
     /* ── Actions ── */
     .actions-list {{ display:flex; flex-direction:column; gap:10px; }}
     .action-card {{
       background:var(--surface2); border:1px solid var(--border);
-      border-radius:10px; padding:14px;
+      border-radius:10px; padding:12px;
       animation:fadeLeft .4s ease both;
-      transition:border-color .2s, transform .2s;
     }}
-    .action-card:hover {{ border-color:rgba(255,255,255,.15); transform:translateX(3px); }}
-    .action-top {{ margin-bottom:8px; }}
+    /* タッチ端末でのフィードバック */
+    .action-card:active {{ background: #1e1e2a; }}
+    @media(hover:hover) {{
+      .action-card:hover {{ border-color:rgba(255,255,255,.15); transform:translateX(3px); transition:border-color .2s,transform .2s; }}
+    }}
+    .action-top {{ margin-bottom:7px; }}
     .action-when {{
-      display:inline-block; font-size:.68rem; font-weight:700;
-      padding:2px 10px; border-radius:20px; border:1px solid; letter-spacing:.06em;
+      display:inline-block; font-size:.66rem; font-weight:700;
+      padding:3px 10px; border-radius:20px; border:1px solid; letter-spacing:.06em;
     }}
-    .action-what {{ font-size:.88rem; font-weight:600; line-height:1.5; margin-bottom:6px; }}
-    .action-why {{ font-size:.78rem; color:var(--muted); line-height:1.5; }}
+    .action-what {{ font-size:.87rem; font-weight:600; line-height:1.55; margin-bottom:5px; }}
+    .action-why {{ font-size:.77rem; color:var(--muted); line-height:1.55; }}
 
     /* ── Cost items ── */
     .cost-list {{ display:flex; flex-direction:column; gap:8px; }}
     .cost-item {{
       display:grid; grid-template-columns:auto auto 1fr;
-      align-items:center; gap:10px;
+      align-items:start; gap:8px 10px;
       padding:10px 12px;
       background:var(--surface2); border-radius:8px;
-      font-size:.84rem;
+      font-size:.83rem;
+    }}
+    /* スマホでは3列が窮屈なら2行に */
+    @media(max-width:380px) {{
+      .cost-item {{ grid-template-columns:auto auto; }}
+      .cost-detail {{ grid-column:1/-1; }}
     }}
     .cost-name {{ font-weight:600; white-space:nowrap; }}
-    .cost-dir  {{ font-weight:700; font-size:.9rem; white-space:nowrap; }}
-    .cost-detail {{ color:var(--muted); font-size:.78rem; }}
+    .cost-dir  {{ font-weight:700; white-space:nowrap; }}
+    .cost-detail {{ color:var(--muted); font-size:.76rem; line-height:1.5; }}
 
     /* ── Articles ── */
     .articles-list {{ display:flex; flex-direction:column; gap:8px; }}
     .article-card {{
       display:block; text-decoration:none; color:var(--text);
       background:var(--surface); border:1px solid var(--border);
-      border-radius:10px; padding:14px 16px;
+      border-radius:10px; padding:14px;
       animation:fadeUp .3s ease both;
-      transition:border-color .2s, background .2s, transform .2s;
+      /* タップ領域を確保 */
+      min-height:44px;
     }}
-    .article-card:hover {{
-      border-color:var(--alert); background:var(--surface2);
-      transform:translateX(4px);
+    .article-card:active {{ background:var(--surface2); border-color:var(--alert); }}
+    @media(hover:hover) {{
+      .article-card:hover {{ border-color:var(--alert); background:var(--surface2); transform:translateX(4px); transition:border-color .2s,background .2s,transform .2s; }}
     }}
-    .article-meta {{ display:flex; align-items:center; gap:8px; margin-bottom:5px; }}
+    .article-meta {{ display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }}
     .article-label {{
-      font-size:.65rem; font-weight:700; color:var(--alert);
+      font-size:.64rem; font-weight:700; color:var(--alert);
       text-transform:uppercase; letter-spacing:.06em;
     }}
-    .article-date {{ font-size:.68rem; color:var(--muted); }}
-    .article-title {{ font-size:.86rem; font-weight:600; line-height:1.5; margin-bottom:4px; }}
+    .article-date {{ font-size:.66rem; color:var(--muted); }}
+    .article-title {{ font-size:.87rem; font-weight:600; line-height:1.55; margin-bottom:4px; }}
     .article-summary {{ font-size:.78rem; color:#8888a0; line-height:1.6; }}
 
-    /* ── Stats row ── */
-    .stats-row {{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }}
-    @media(max-width:500px){{ .stats-row{{grid-template-columns:1fr 1fr}} }}
-    .stat-card {{
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:var(--radius); padding:18px;
-      animation:fadeUp .45s ease both;
-      transition:transform .2s, border-color .2s;
-    }}
-    .stat-card:hover {{ transform:translateY(-2px); border-color:rgba(255,255,255,.14); }}
-    .stat-label {{ color:var(--muted); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }}
-    .stat-value {{ font-size:1.8rem; font-weight:900; line-height:1; color:var(--text); }}
-    .stat-value.accent {{ color:var(--alert); }}
-
     /* ── Animations ── */
-    @keyframes fadeDown {{ from{{opacity:0;transform:translateY(-16px)}} to{{opacity:1;transform:none}} }}
-    @keyframes fadeUp   {{ from{{opacity:0;transform:translateY(16px)}}  to{{opacity:1;transform:none}} }}
-    @keyframes fadeLeft {{ from{{opacity:0;transform:translateX(-16px)}} to{{opacity:1;transform:none}} }}
+    @keyframes fadeDown {{ from{{opacity:0;transform:translateY(-14px)}} to{{opacity:1;transform:none}} }}
+    @keyframes fadeUp   {{ from{{opacity:0;transform:translateY(14px)}}  to{{opacity:1;transform:none}} }}
+    @keyframes fadeLeft {{ from{{opacity:0;transform:translateX(-14px)}} to{{opacity:1;transform:none}} }}
 
-    footer {{ text-align:center; color:var(--muted); font-size:.7rem; padding-top:48px; animation:fadeUp .5s ease .9s both; }}
+    footer {{ text-align:center; color:var(--muted); font-size:.7rem; padding-top:40px; animation:fadeUp .5s ease .9s both; }}
   </style>
 </head>
 <body>
