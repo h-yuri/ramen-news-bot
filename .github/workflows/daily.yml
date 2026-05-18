@@ -21,6 +21,7 @@ jobs:
       - name: Run pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PYTHONUTF8: "1"
         run: |
           python scripts/fetch.py
           python scripts/summarize.py
