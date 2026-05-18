@@ -20,7 +20,7 @@ MAX_ARTICLES = 80
 
 
 def summarize():
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY", "").lstrip("﻿").strip()
     if not api_key:
         raise ValueError("GEMINI_API_KEY が設定されていません。.env を確認してください。")
 
