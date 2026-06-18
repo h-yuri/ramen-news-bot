@@ -3,10 +3,111 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).parent.parent
 TODAY = datetime.now().strftime("%Y-%m-%d")
 JSON_PATH = ROOT / "docs" / "data" / f"{TODAY}.json"
 HTML_OUTPUT = ROOT / "docs" / "index.html"
+CONFIG_PATH = ROOT / "config.yaml"
+
+
+def load_access_hash():
+    """config.yaml の access.hash（SHA-256 の "ユーザーID:パスワード"）を読む。
+    未設定なら空文字を返し、その場合ゲートは無効（公開）になる。"""
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+        return ((cfg.get("access") or {}).get("hash") or "").strip()
+    except Exception:
+        return ""
+
+
+# クライアントサイドの簡易パスワードゲート。
+# 注意: 本格的な暗号防御ではなく「URL を知っている人＋鍵を知っている人」向けの
+# 抑止レベルの保護。ページHTMLはソース上には存在するため、機密度の高い情報には使わない。
+GATE_TEMPLATE = """
+<div id="gate">
+  <form id="gate-form" autocomplete="on">
+    <div class="gate-lock">🔒</div>
+    <div class="gate-title">ラーメン経営情報ボード</div>
+    <div class="gate-sub">このページは保護されています</div>
+    <input id="gate-user" name="username" placeholder="ユーザーID" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <input id="gate-pass" name="password" type="password" placeholder="パスワード" autocomplete="current-password">
+    <button type="submit">ログイン</button>
+    <div id="gate-err"></div>
+  </form>
+</div>
+<style>
+  body.gate-locked { overflow: hidden; height: 100vh; }
+  #gate {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    background: #0a0a0f;
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%);
+    padding: 24px;
+  }
+  #gate-form {
+    display: flex; flex-direction: column; gap: 12px;
+    width: 100%; max-width: 320px;
+    background: #111118; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 28px 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    font-family: 'Hiragino Sans','Noto Sans JP',sans-serif; color: #e4e4f0;
+  }
+  .gate-lock { font-size: 2rem; text-align: center; }
+  .gate-title { font-size: 1.05rem; font-weight: 800; text-align: center; }
+  .gate-sub { font-size: .75rem; color: #5a5a70; text-align: center; margin-bottom: 6px; }
+  #gate-form input {
+    background: #18181f; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 12px 14px; color: #e4e4f0; font-size: 1rem;
+    outline: none;
+  }
+  #gate-form input:focus { border-color: #6366f1; }
+  #gate-form button {
+    background: #6366f1; color: #fff; border: none; border-radius: 10px;
+    padding: 12px; font-size: .95rem; font-weight: 700; cursor: pointer; margin-top: 4px;
+  }
+  #gate-form button:active { opacity: .85; }
+  #gate-err { color: #ff4757; font-size: .78rem; text-align: center; min-height: 1em; }
+</style>
+<script>
+(function(){
+  var HASH = "__HASH__";
+  var KEY = "ramen-board-auth";
+  async function sha256(s){
+    var buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
+  }
+  function unlock(){
+    var g = document.getElementById("gate");
+    if (g) g.remove();
+    document.body.classList.remove("gate-locked");
+  }
+  if (localStorage.getItem(KEY) === HASH) { unlock(); return; }
+  document.body.classList.add("gate-locked");
+  document.addEventListener("DOMContentLoaded", function(){
+    var form = document.getElementById("gate-form");
+    if (!form) return;
+    form.addEventListener("submit", async function(e){
+      e.preventDefault();
+      var u = document.getElementById("gate-user").value.trim();
+      var p = document.getElementById("gate-pass").value;
+      var h = await sha256(u + ":" + p);
+      if (h === HASH) { localStorage.setItem(KEY, HASH); unlock(); }
+      else { document.getElementById("gate-err").textContent = "IDまたはパスワードが違います"; }
+    });
+  });
+})();
+</script>
+"""
+
+
+def build_gate_html():
+    h = load_access_hash()
+    if not h:
+        return ""
+    return GATE_TEMPLATE.replace("__HASH__", h)
 
 ALERT_CONFIG = {
     "high":   {"color": "#ff4757", "glow": "rgba(255,71,87,0.35)",  "bg": "#2d1b1b", "label": "HIGH",   "emoji": "🔴"},
@@ -84,6 +185,8 @@ def build():
         </div>"""
 
     # --- Articles (filter to relevant only) ---
+    gate_html = build_gate_html()
+
     relevant_indices = set(analysis.get("relevant_indices", []))
     # 1-indexed: index i in articles corresponds to article number i+1
     if relevant_indices:
@@ -343,6 +446,7 @@ def build():
   </style>
 </head>
 <body>
+{gate_html}
 <div class="wrap">
 
   <header>
